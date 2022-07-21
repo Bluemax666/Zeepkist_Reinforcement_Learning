@@ -64,7 +64,7 @@ class Env:
         self.metadata = ""
         
         self.gamepad = vg.VX360Gamepad()
-        self.ocr_api = tesserocr.PyTessBaseAPI(path="D:/Tesseract-OCR/tessdata")
+        self.ocr_api = tesserocr.PyTessBaseAPI()
             
     
     def reset(self):
