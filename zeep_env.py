@@ -2,7 +2,7 @@
 """
 Created on Thu Jun 27 18:51:46 2019
 
-@author: maxim
+@author: maxime
 """
 
 import numpy as np
@@ -21,19 +21,20 @@ import win32gui, win32ui, win32con, win32api
 class Env:
     ENV_NAME = "Zeepkist"
 
-    WI_WIDTH = 1280
-    WI_HEIGHT = 720
-    
-    SCREEN_GRAB_COORDS = [250,300,1030,650]
+    #GAME_WINDOW_COORDS = [0, 30, 1280, 750]
+    GAME_WINDOW_COORDS = [427, 305, 1275, 781]
+    WI_WIDTH = GAME_WINDOW_COORDS[2] - GAME_WINDOW_COORDS[0]
+    WI_HEIGHT = GAME_WINDOW_COORDS[3] - GAME_WINDOW_COORDS[1]
+
     VAE_dims = 16
     VAE_model_name = "Zeepkist_image_VAE.torch"
     
-    EPISODE_DURATION = 100
+    EPISODE_DURATION = 100 #1 min 40s
     
     total_cp_number = 6
     checkpoint_reward = 60
     finish_reward = 100
-    crash_reward = -20
+    crash_reward = -25
     
     FPS_limit = 20
     
@@ -64,14 +65,15 @@ class Env:
         self.metadata = ""
         
         self.gamepad = vg.VX360Gamepad()
-        self.ocr_api = tesserocr.PyTessBaseAPI()
+        self.ocr_api = tesserocr.PyTessBaseAPI(path="D:/Tesseract-OCR/tessdata")
             
     
     def reset(self):
+        click_x, click_y = self.rel_to_abs_coords([0.063, 0.097,0,0], self.GAME_WINDOW_COORDS)[:2]
         try:
             self.reset_joy()
                 
-            leftClick(80,100)
+            leftClick(click_x, click_y)
             time.sleep(0.1) 
             self.press_Y(0.5)
             time.sleep(0.5)
@@ -80,7 +82,7 @@ class Env:
             lt = time.time()
             while self.get_speed() < 0:
                 if time.time() - lt > 10:
-                    leftClick(80,100)
+                    leftClick(click_x, click_y)
                     time.sleep(0.1) 
                     self.press_Y(0.5)
                     time.sleep(0.5)
@@ -110,7 +112,7 @@ class Env:
     
     
     def get_speed_reward(self, speed):
-        return np.power((speed/150), 1) - 0.15
+        return np.power((speed/150), 1) - 0.35
     
     
     def step(self, action):   
@@ -184,7 +186,9 @@ class Env:
         return self.z_frame
     
     def record_frame(self):
-        self.frame = grabScreen(self.SCREEN_GRAB_COORDS)
+        RELATIVE_SCREEN_GRAB_COORDS = [0.195, 0.375, 0.804, 0.861]
+        self.screen_grab_coords = self.rel_to_abs_coords(RELATIVE_SCREEN_GRAB_COORDS, self.GAME_WINDOW_COORDS)
+        self.frame = grabScreen(self.screen_grab_coords)
         self.frame = cv2.resize(self.frame, (64, 64))
         
         return self.frame
@@ -222,7 +226,9 @@ class Env:
   
  
     def get_speed(self):
-        speed_img = grabScreen([1090,645,1243,708])
+        RELATIVE_SPEED_COORDS =  [0.852, 0.854, 0.971, 0.942]
+        self.speed_coords = self.rel_to_abs_coords(RELATIVE_SPEED_COORDS, self.GAME_WINDOW_COORDS)
+        speed_img = grabScreen(self.speed_coords)
         mask = cv2.inRange(speed_img, np.array([250,250,250]), np.array([255,255,255]))
         mask = cv2.bitwise_not(mask)
         pil_img = Image.fromarray(mask)
@@ -240,7 +246,10 @@ class Env:
             return -1
     
     def get_cp_count(self):
-        cp_img = grabScreen([6,653,166,741])
+        
+        RELATIVE_CP_COORDS = [0.005, 0.865, 0.130, 0.988]
+        self.cp_coords = self.rel_to_abs_coords(RELATIVE_CP_COORDS, self.GAME_WINDOW_COORDS)
+        cp_img = grabScreen(self.cp_coords)
         mask = cv2.inRange(cp_img, np.array([250,250,250]), np.array([255,255,255]))
         mask = cv2.bitwise_not(mask)
         pil_img = Image.fromarray(mask)
@@ -298,6 +307,23 @@ class Env:
         vae.load_state_dict(torch.load(model_name, map_location='cpu')) 
         vae = vae.to(self.device)
         return vae
+
+    def rel_to_abs_coords(self, rel_coords, win_coords):
+        abs_x1 = round(win_coords[0] + rel_coords[0]*self.WI_WIDTH)
+        abs_y1 = round(win_coords[1] + rel_coords[1]*self.WI_HEIGHT)
+        
+        abs_x2 = round(win_coords[0] + rel_coords[2]*self.WI_WIDTH)
+        abs_y2 = round(win_coords[1] + rel_coords[3]*self.WI_HEIGHT)
+        return [abs_x1, abs_y1, abs_x2, abs_y2]
+        
+        
+    def abs_to_rel_coords(self, abs_coords, win_coords):
+        rel_x1 = (abs_coords[0] - win_coords[0]) / self.WI_WIDTH
+        rel_y1 = (abs_coords[1] - win_coords[1]) / self.WI_HEIGHT
+        
+        rel_x2 = (abs_coords[2] - win_coords[0]) / self.WI_WIDTH
+        rel_y2 = (abs_coords[3] - win_coords[1]) / self.WI_HEIGHT
+        return [rel_x1, rel_y1, rel_x2, rel_y2]
     
     def render(self):
         pass
