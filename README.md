@@ -1,2 +1,2 @@
-# Zeepkist_Reinforcement_Learning
+# Zeepkist Reinforcement Learning
 
