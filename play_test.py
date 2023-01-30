@@ -1,17 +1,10 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun May  1 23:29:41 2022
-
-@author: maxim
-"""
-
 import time
-from zeep_env import Env
+from new_zeep_env import Env
 from sb3_contrib import TQC
-time.sleep(1)
-env = Env(1)
+time.sleep(6)
+env = Env(nb_actions=1)
 
-model = TQC.load("Zeep_03_run3")
+model = TQC.load("Noel_zeep_map3_1")
 
 obs = env.reset()
 while True:
