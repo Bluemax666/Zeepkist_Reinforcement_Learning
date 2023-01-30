@@ -1,10 +1,7 @@
-"""
-Variational encoder model, used as a visual model
-for our model of the world.
-"""
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
 
 class Decoder(nn.Module):
     """ VAE decoder """
@@ -63,7 +60,7 @@ class VAE(nn.Module):
         self.encode = Encoder(img_channels, latent_size)
         self.decode = Decoder(img_channels, latent_size)
 
-    def forward(self, x): # pylint: disable=arguments-differ
+    def forward(self, x):
         mu, logsigma = self.encode(x)
         sigma = logsigma.exp()
         eps = torch.randn_like(sigma)
