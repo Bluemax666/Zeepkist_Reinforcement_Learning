@@ -10,7 +10,7 @@ class Game_VAE:
     """This class is used to encode the images of the game"""
     def __init__(self, visualize_frame=False):
         self.SCREEN_GRAB_COORDS = [250,300,1030,650]
-        self.VAE_model_name = "zeep_VAE_RGB64.torch"
+        self.VAE_model_name = "Zeepkist_image_VAE.torch"
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         print("device VAE encode : {}".format(self.device))
         self.VAE_dims = 16
