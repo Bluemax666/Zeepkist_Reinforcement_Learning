@@ -1,16 +1,15 @@
 import numpy as np
-import cv2
-import time
-from gym import spaces
-from collections import deque
-import tesserocr
+import win32gui, win32ui, win32con, win32api #windows api to capture screenshots fast
+from zeep_VAE_RGB64 import Game_VAE #its the network that is used to encode the image
 from datetime import datetime
-from PIL import Image
-import pygame
-import vgamepad as vg
-import win32gui, win32ui, win32con, win32api
-
-from zeep_VAE_RGB64 import Game_VAE
+from collections import deque
+from gym import spaces #used by the learning algorithm
+import vgamepad as vg #to simulate a virtual gamepad
+from PIL import Image #to convert to Image object for tesserocr  
+import tesserocr #to read text from images
+import pygame #pygame.time.delay(mil_delay) is more precise than time.sleep()
+import cv2 #to manipulate images
+import time #time.sleep()
 
 
 ENV_NAME = "Zeepkist"
@@ -281,7 +280,7 @@ class Env:
   
  
     def get_speed(self):
-        """reeads the speed from the screen of the game"""
+        """reads the speed from the screen of the game"""
         
         speed_img = grabScreen([1090,645,1243,708])
         mask = cv2.inRange(speed_img, self.white_color_lower_bound, self.white_color_upper_bound)
@@ -299,7 +298,7 @@ class Env:
             return -1
     
     def get_cp_count(self):
-        """reeads the number of checkpoints passed from the screen of the game"""
+        """reads the number of checkpoints passed from the screen of the game"""
         
         cp_img = grabScreen([6,653,166,741])
         mask = cv2.inRange(cp_img, self.white_color_lower_bound, self.white_color_upper_bound)
